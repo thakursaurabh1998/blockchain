@@ -81,25 +81,30 @@ class Blockchain {
   }
 }
 
-let myChain = new Blockchain();
+// let myChain = new Blockchain();
 
-console.log("Adding and Mining Block 1...");
-myChain.addBlock(new Block(1, new Date().getTime(), { amount: 4 }));
-console.log("Adding and Mining Block 2...");
-myChain.addBlock(new Block(2, new Date().getTime(), { amount: 20 }));
-console.log("Adding and Mining Block 3...");
-myChain.addBlock(new Block(3, new Date().getTime(), { data: "saurabh" }));
+// console.log("Adding and Mining Block 1...");
+// myChain.addBlock(new Block(1, new Date().getTime(), { amount: 4 }));
+// console.log("Adding and Mining Block 2...");
+// myChain.addBlock(new Block(2, new Date().getTime(), { amount: 20 }));
+// console.log("Adding and Mining Block 3...");
+// myChain.addBlock(new Block(3, new Date().getTime(), { data: "saurabh" }));
 
-console.log(myChain.isChainValid());
+// console.log(myChain.isChainValid());
 
+// // console.log(JSON.stringify(myChain.chain, null, 4));
+
+// myChain.chain[2].data = { amount: 100 };
+
+// console.log(myChain.isChainValid());
+// // console.log(JSON.stringify(myChain.chain, null, 4));
+
+// myChain.makeChainValid();
 // console.log(JSON.stringify(myChain.chain, null, 4));
 
-myChain.chain[2].data = { amount: 100 };
+// console.log(myChain.isChainValid());
 
-console.log(myChain.isChainValid());
-// console.log(JSON.stringify(myChain.chain, null, 4));
-
-myChain.makeChainValid();
-console.log(JSON.stringify(myChain.chain, null, 4));
-
-console.log(myChain.isChainValid());
+module.exports = {
+    Block,
+    Blockchain
+}
