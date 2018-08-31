@@ -46,12 +46,17 @@ class Blockchain {
     return this.chain[this.chain.length - 1];
   }
 
+  /* Adding block and mining it */
   addBlock(newBlock) {
-    newBlock.previousHash = this.getLatestBlock().hash;
+    const previousBlock = this.getLatestBlock();
+    newBlock.previousHash = previousBlock.hash;
+    // console.log(newBlock);
+    // newBlock.data.stack = previousBlock.data.stack + newBlock.data.value;
     newBlock.mineBlock(this.difficulty);
     this.chain.push(newBlock);
   }
 
+  /* Check validity of the chain */
   isChainValid() {
     for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
@@ -68,16 +73,50 @@ class Blockchain {
     return true;
   }
 
-  makeChainValid(){
-      for(let i=1; i<this.chain.length;i++) {
-        const currentBlock = this.chain[i];
-        const previousBlock = this.chain[i - 1];
+  /* Making chain valid by mining all the blocks */
+  makeChainValid() {
+    for (let i = 1; i < this.chain.length; i++) {
+      const currentBlock = this.chain[i];
+      const previousBlock = this.chain[i - 1];
 
-        currentBlock.previousHash = previousBlock.hash;
-        currentBlock.hash = currentBlock.calculateHash();
+      currentBlock.previousHash = previousBlock.hash;
+      currentBlock.hash = currentBlock.calculateHash();
 
-        currentBlock.mineBlock(this.difficulty);
-      }
+      currentBlock.mineBlock(this.difficulty);
+    }
+  }
+
+  transaction(category, value, initiated_by, distributed_to = "") {
+    const latestBlock = this.getLatestBlock();
+    const index = latestBlock.index + 1;
+    let information = {
+      category,
+      initiated_by,
+      value
+    };
+    let stack;
+    switch (category) {
+      case "donor":
+        stack = latestBlock.data.stack + value;
+        break;
+      case "ngo":
+        if (value > latestBlock.data.stack) return false;
+        information = {
+          ...information,
+          distributed_to
+        };
+        stack = latestBlock.data.stack - value;
+        break;
+    }
+
+    information = {
+      ...information,
+      stack
+    };
+    const newBlock = new Block(index, new Date().getTime(), information);
+    this.addBlock(newBlock);
+
+    return newBlock;
   }
 }
 
@@ -105,6 +144,6 @@ class Blockchain {
 // console.log(myChain.isChainValid());
 
 module.exports = {
-    Block,
-    Blockchain
-}
+  Block,
+  Blockchain
+};

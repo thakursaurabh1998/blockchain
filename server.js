@@ -1,12 +1,30 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const fs = require("fs");
 
 const { Block, Blockchain } = require("./blockchain");
 
-const blockchain = new Blockchain();
-blockchain.addBlock(new Block(1, new Date().getTime(), { amount: 4 }));
-blockchain.addBlock(new Block(2, new Date().getTime(), { amount: 20 }));
-blockchain.addBlock(new Block(3, new Date().getTime(), { data: "saurabh" }));
+const writeJSON = chain => {
+  fs.writeFileSync("chain.json", JSON.stringify(chain));
+};
+
+const parseJSON = () => {
+  try {
+    return JSON.parse(fs.readFileSync("chain.json"));
+  } catch (error) {
+    return [];
+  }
+};
+
+let blockchain = new Blockchain();
+
+if (blockchain.chain.length === 1) {
+  const localFileSystem = parseJSON();
+  localFileSystem.chain.splice(0, 1);
+  localFileSystem.chain.forEach(e => {
+    blockchain.addBlock(new Block(e.index, e.timestamp, e.data));
+  });
+}
 
 let app = express();
 
@@ -35,18 +53,54 @@ app.get("/validity", (req, res) => {
 
 app.get("/mine", (req, res) => {
   blockchain.makeChainValid();
+  writeJSON(blockchain);
   res.status(200).send("Chain is validated");
 });
 
 app.post("/newblock", (req, res) => {
   const index = blockchain.chain[blockchain.chain.length - 1].index + 1;
   const data = req.body.data;
-  const previousHash = blockchain.chain[blockchain.chain.length - 1].hash;
-  const newBlock = new Block(index, new Date().getTime(), data, previousHash);
+  const newBlock = new Block(index, new Date().getTime(), data);
+
   blockchain.addBlock(newBlock);
+
+  writeJSON(blockchain);
 
   if (blockchain.isChainValid()) res.status(201).send(newBlock);
   else res.status(400).send("Blockchain invalid");
+});
+
+app.post("/distribute", (req, res) => {
+  const { value, initiated_by, distributed_to } = req.body;
+  const newBlock = blockchain.transaction(
+    "ngo",
+    value,
+    initiated_by,
+    distributed_to
+  );
+  if (!newBlock)
+    res
+      .status(403)
+      .send(
+        "Value shift is greater than stack value, decrease the shift value."
+      );
+  else res.status(200).send(newBlock);
+});
+
+app.post("/donate", (req, res) => {
+  const { value, initiated_by } = req.body;
+  const newBlock = blockchain.transaction(
+    "donor",
+    value,
+    initiated_by
+  );
+  if (!newBlock)
+    res
+      .status(403)
+      .send(
+        "Value shift is greater than stack value, decrease the shift value."
+      );
+  else res.status(200).send(newBlock);
 });
 
 const port = 5000;
